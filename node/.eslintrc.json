@@ -1,0 +1,7 @@
+{
+  "extends": ["eslint:recommended", "airbnb-base", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "no-console": 0
+  }
+}

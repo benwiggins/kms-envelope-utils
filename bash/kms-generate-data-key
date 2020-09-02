@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+hash aws &>/dev/null || {
+  (>&2 echo "Error: AWS CLI not found on PATH");
+  exit 1;
+}
+
+alias=$1
+
+if [ -z $1 ]; then
+  echo "Usage: $0 <alias>" >&2
+  exit 1
+fi
+
+aws kms generate-data-key-without-plaintext \
+  --key-id $alias \
+  --key-spec AES_256 \
+  --query CiphertextBlob \
+  --output text

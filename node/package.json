@@ -1,0 +1,30 @@
+{
+  "name": "kms-envelope-utils",
+  "version": "1.0.0",
+  "description": "Utility for KMS Envelope encryption",
+  "main": "index.js",
+  "repository": "https://github.com/benwiggins/kms-envelope-utils",
+  "author": "Ben Wiggins",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@aws-sdk/client-kms": "1.0.0-gamma.8",
+    "get-stdin": "8.0.0",
+    "meow": "7.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.8.1",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.1.1"
+  },
+  "scripts": {
+    "decrypt": "node ./kmsEnvelopeDecrypt.js",
+    "encrypt": "node ./kmsEnvelopeEncrypt.js",
+    "generate-data-key": "node ./kmsGenerateDataKey.js",
+    "lint": "eslint --fix --max-warnings=0 .",
+    "prettier": "prettier --write ."
+  }
+}

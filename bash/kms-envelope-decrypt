@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+hash openssl &>/dev/null || {
+  (>&2 echo 'Error: openssl not found on PATH');
+  exit 1;
+}
+
+hash aws &>/dev/null || {
+  (>&2 echo 'Error: AWS CLI not found on PATH');
+  exit 1;
+}
+
+function usage {
+  echo 'Usage:' $(basename "$0") '-k <encrypted-key> -s <secret>'
+  echo '   or: echo <secret> |' $(basename "$0") '-k <encrypted-key>'
+}
+
+while getopts k:s:h FLAG; do
+  case $FLAG in
+    k)
+      encrypted_key_base64=$OPTARG
+      ;;
+    s)
+      final_base64=$OPTARG
+      ;;
+    h)
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+shift "$((OPTIND - 1))"
+
+if [ -n "$encrypted_key_base64" ]; then
+  key_base64=$(aws kms decrypt --ciphertext-blob fileb://<(echo -n "$encrypted_key_base64" | base64 --decode) --query Plaintext --output text)
+fi
+
+[ "$key_base64" == "" ] && {
+  usage;
+  exit 1;
+}
+
+# Check STDIN
+[ "$final_base64" == "" ] && [ ! -t 0 ] && {
+  final_base64=$(cat -);
+}
+
+[ "$final_base64" == "" ] && {
+  usage;
+  exit 1;
+}
+
+key_hex=$(echo -n "$key_base64" | base64 --decode | xxd -p | tr -d '\n')
+
+iv_hex=$(echo -n "$final_base64" | base64 --decode | dd count=1 bs=16 2>/dev/null | xxd -p | tr -d '\n')
+encrypted_value_base64=$(echo -n "$final_base64" | base64 --decode | dd skip=16 bs=1 2>/dev/null | base64)
+
+decrypted_value=$(echo -n "$encrypted_value_base64" | base64 --decode | openssl enc -aes-256-cbc -d -iv "$iv_hex" -K "$key_hex")
+
+echo -n "$decrypted_value"
